@@ -1,15 +1,12 @@
 import os
 from PIL import Image
 
-# === Configuration ===
-input_folder = r'images_to_crop'  # Change this path
+input_folder = r'images_to_crop'
 output_folder = os.path.join(input_folder, 'resized')
 target_size = (800, 800)
 
-# === Ensure output folder exists ===
 os.makedirs(output_folder, exist_ok=True)
 
-# === Supported image extensions ===
 valid_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.gif'}
 
 def center_crop(im):
@@ -21,13 +18,12 @@ def center_crop(im):
     bottom = top + min_dim
     return im.crop((left, top, right, bottom))
 
-# === Process all images ===
 for filename in os.listdir(input_folder):
     if os.path.splitext(filename.lower())[1] in valid_extensions:
         try:
             img_path = os.path.join(input_folder, filename)
             with Image.open(img_path) as img:
-                img = img.convert("RGB")  # Normalize format
+                img = img.convert("RGB") 
                 img = center_crop(img)
                 img = img.resize(target_size, Image.LANCZOS)
 
