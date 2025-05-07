@@ -7,7 +7,7 @@ import math
 
 
 
-with open('C:\\EWS\\Eyetracker\\ProbandUID.txt', 'r', encoding='utf-8') as f:
+with open('ProbandUID.txt', 'r', encoding='utf-8') as f:
     probandnr = f.read().strip()
 
 df = pd.read_csv("Proband"+str(probandnr)+".csv")

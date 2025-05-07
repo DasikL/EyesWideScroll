@@ -2,7 +2,7 @@ import os
 from PIL import Image
 
 # === Configuration ===
-input_folder = r'C:\EWS\Webcomics\Arcade_Rage'  # Change this path
+input_folder = r'images_to_crop'  # Change this path
 output_folder = os.path.join(input_folder, 'resized')
 target_size = (800, 800)
 

@@ -6,7 +6,7 @@ import csv
 import time
 
 
-with open('C:\\EWS\\Eyetracker\\ProbandUID.txt', 'r', encoding='utf-8') as f:
+with open('ProbandUID.txt', 'r', encoding='utf-8') as f:
     proband = f.read().strip()
 print("Proband",proband)
 # Ensure the value read is a valid integer
@@ -119,7 +119,7 @@ while run:
                 elif index == len(images):
                     image = pygame.font.Font(None, 74).render("Neuen Probanden kalibrieren? Dann jetzt '->' drücken", True, (255, 255, 255))
                    
-                    with open('C:\\EWS\\Eyetracker\\Proband' + str(proband) +'.csv', 'w', newline='', encoding='utf-8') as csvfile:
+                    with open('Proband' + str(proband) +'.csv', 'w', newline='', encoding='utf-8') as csvfile:
                         # Bestimme die Feldnamen basierend auf den Keys des ersten Dictionaries
 
                         feldnamen = list[0].keys()
@@ -144,7 +144,7 @@ while run:
 
 tracker.unsubscribe_from(tr.EYETRACKER_GAZE_DATA, gaze_data_callback)
 # Increment the ProbandUID and write it back to the file
-with open('C:\\EWS\\Eyetracker\\ProbandUID.txt', 'w', encoding='utf-8') as f:
+with open('ProbandUID.txt', 'w', encoding='utf-8') as f:
     f.write(str(proband+1))
     print(proband)
 pygame.quit()
