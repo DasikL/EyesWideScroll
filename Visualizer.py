@@ -1,24 +1,19 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 import cv2
-import math
-
 
 
 with open('ProbandUID.txt', 'r', encoding='utf-8') as f:
     probandnr = f.read().strip()
 
 df = pd.read_csv("Proband"+str(probandnr)+".csv")
+
 coordinates = list()
-
 for i in df['left_gaze_point_on_display_area']:
-
     item1 = float(i.split(",")[0].strip("("))
     item2 =float(i.split(",")[1].strip(")"))
     coordinates.append((item1, item2))
-coordinates
 
 data = pd.DataFrame(coordinates, columns=['x', 'y'])
 data["system_time_stamp"]=df["system_time_stamp"]
@@ -27,7 +22,6 @@ data["Image"]=df["Image"]
 #DataFrames are grouped by their image
 dfs = dict(tuple(data.groupby('Image')))
 print(dfs.keys())
-
 
 def filter_noise(
     df: df,
