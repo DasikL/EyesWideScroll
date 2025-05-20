@@ -5,3 +5,4 @@ Es kann mit Space geskippt werden.
 Die Daten werden als Proband ProbandUID .csv gespeichert.
 - Visualizer.py erstellt Heatmaps zu einer angegebenen csv-Datei.
 
+Der Ordner "complete_images" enthält sämtliche Stimuli, der Ordner "images" die Stimuli, die im aktuellen Experiment verwendet werden. 
