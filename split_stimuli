@@ -1,0 +1,39 @@
+import os
+import pandas as pd
+from pathlib import Path
+
+def split_csv_by_image(input_csv_path: str, proband_nr: str, output_dir: str = None):
+    """
+    Liest eine CSV-Datei ein und erstellt für jedes eindeutige Bild
+    eine eigene CSV-Datei mit den entsprechenden Blickpunkten.
+
+    Parameters:
+    - input_csv_path: Pfad zur Eingabe-CSV-Datei.
+    - output_dir: Verzeichnis, in dem die neuen CSV-Dateien gespeichert werden.
+                  Standardmäßig wird das gleiche Verzeichnis wie die Eingabedatei verwendet.
+    """
+    # Pfadinfos
+    input_path = Path(input_csv_path)
+    if output_dir is None:
+        output_dir = input_path.parent
+    else:
+        os.makedirs(output_dir, exist_ok=True)
+
+    # CSV einlesen
+    df = pd.read_csv(input_path)
+
+
+    # Nach der Spalte "Image" gruppieren und Dateien erstellen
+    for image_name, group in df.groupby('Image'):
+        group = group.drop(columns=['Image'])
+
+        safe_name = proband_nr + ' - ' + Path(image_name).stem
+        output_file = Path(output_dir) / f"{safe_name}.csv"
+
+        # Gruppendaten als neue CSV speichern
+        group.to_csv(output_file, index=False)
+
+
+if __name__ == '__main__':
+    proband_nr = 'Proband0'
+    split_csv_by_image("""eingabepfad""" + proband_nr + '.csv', proband_nr, """ausgabepfad""")
