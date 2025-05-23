@@ -15,9 +15,9 @@ min_time = 5 # Min Anzeigedauer in s
 
 
 def gaze_data_callback(gaze_data):
-    if(index < len(images)):
-        gaze_data["Image"] = images[index]
-    else: gaze_data["Image"] = None
+    #if(index < len(images)):
+    #    gaze_data["Image"] = images[index]
+    #else: gaze_data["Image"] = None
     list.append(gaze_data)
 
 
@@ -80,21 +80,32 @@ def next_image():
     if index < len(images):
         image = pygame.image.load(r'' + folder_path + images[index])
         image = scale_image(image)
+
+        with open('Proband' + str(proband) + '_' + images[index - 1].split(".")[0] + '.csv', 'w', newline='', encoding='utf-8') as csvfile:
+            # Bestimme die Feldnamen basierend auf den Keys des ersten Dictionaries
+            feldnamen = list[0].keys()
+            writer = csv.DictWriter(csvfile, fieldnames=feldnamen)
+            # Schreibe die Kopfzeile
+            writer.writeheader()
+            # Schreibe die Datenzeilen
+            writer.writerows(list)
+
+        list = []
         pygame.time.set_timer(skippable, min_time * 1000)
         pygame.time.set_timer(force_skip, max_time * 1000)
 
     elif index == len(images):
         image = pygame.font.Font(None, 74).render("Neuen Probanden kalibrieren? Dann jetzt '->' drücken", True, (255, 255, 255))
-        with open('Proband' + str(proband) + '.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        
+        with open('Proband' + str(proband) + '_' + images[index - 1].split(".")[0] + '.csv', 'w', newline='', encoding='utf-8') as csvfile:
             # Bestimme die Feldnamen basierend auf den Keys des ersten Dictionaries
             feldnamen = list[0].keys()
             writer = csv.DictWriter(csvfile, fieldnames=feldnamen)
-
             # Schreibe die Kopfzeile
             writer.writeheader()
-
             # Schreibe die Datenzeilen
             writer.writerows(list)
+            
         pygame.time.set_timer(force_skip, 0)
 
     else:
