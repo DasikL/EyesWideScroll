@@ -75,7 +75,7 @@ def scale_image(pImage):
 
 
 
-folder_path = 'images'
+folder_path = 'current_images'
 images = [f for f in sorted(os.listdir(folder_path)) if f.lower().endswith('.png') or f.lower().endswith("jpeg") or f.lower().endswith("jpg")]
 if not images:
     print("Keine Bilder im Ordner gefunden.")

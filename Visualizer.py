@@ -129,7 +129,7 @@ import os
 for screening in adjusted_df_list:
     image_name = screening['Image'].iloc[0].strip(".jpg")
 
-    image = cv2.imread("images/" + screening['Image'].iloc[0])
+    image = cv2.imread("current_images/" + screening['Image'].iloc[0])
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     # 3. Erzeuge ein leeres Canvas mit gleicher Größe wie das Bild
     heatmap_data = np.zeros((image.shape[0], image.shape[1]))
