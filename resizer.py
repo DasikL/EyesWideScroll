@@ -1,7 +1,7 @@
 import os
 from PIL import Image
 
-input_folder = r'images_to_crop'
+input_folder = r'new_images'
 output_folder = os.path.join(input_folder, 'resized')
 target_size = (800, 800)
 
