@@ -1,0 +1,7 @@
+pandas
+pathlib
+tobii_research 
+pygame
+matplotlib
+numpy
+opencv-python
