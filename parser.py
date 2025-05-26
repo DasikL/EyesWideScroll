@@ -1,7 +1,7 @@
 #fix some naming errors
 import os
 
-for filename in os.listdir("current_images"):
-    if filename.endswith("..jpg"):
-        new_filename = filename.replace("..jpg", ".jpg")
-        os.rename(os.path.join("current_images", filename), os.path.join("current_images", new_filename))
+for filename in os.listdir("new_images"):
+    if filename.endswith("_i.jpg"):
+        new_filename = filename.replace("_i.jpg", "_.jpg")
+        os.rename(os.path.join("new_images", filename), os.path.join("new_images", new_filename))

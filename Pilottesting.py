@@ -6,7 +6,7 @@ import csv
 import time
 
 
-proband = 0
+proband = 5
 list = []
 folder_path = 'current_images/'
 max_time = 10 # Max Anzeigedauer in s
