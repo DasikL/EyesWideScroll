@@ -165,14 +165,13 @@ while run:
 
             if (event.key == pygame.K_RIGHT or event.key == pygame.K_SPACE) and skip:
                 next_image()
-                skip = False
 
         elif event.type == force_skip:
             next_image()
-            skip = False
 
         elif event.type == skippable:
             skip = True
+            pygame.time.set_timer(skippable, 0)
 
 
     pygame.display.update()
