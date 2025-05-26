@@ -8,7 +8,7 @@ import time
 
 proband = 0
 list = []
-folder_path = 'C:/Uni/Semester6/Projektseminar/Pilottesting/Images/'
+folder_path = 'current_images/'
 max_time = 10 # Max Anzeigedauer in s
 min_time = 5 # Min Anzeigedauer in s
 
