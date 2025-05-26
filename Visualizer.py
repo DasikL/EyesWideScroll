@@ -4,10 +4,13 @@ import matplotlib.pyplot as plt
 import cv2
 
 
-with open('ProbandUID.txt', 'r', encoding='utf-8') as f:
-    probandnr = f.read().strip()
+#with open('ProbandUID.txt', 'r', encoding='utf-8') as f:
+#    probandnr = f.read().strip()
+probandnr = 5
 
 df = pd.read_csv("Proband"+str(probandnr)+".csv")
+#list all csv files starting with Proband<probandnr> in the current directory
+
 
 coordinates = list()
 for i in df['left_gaze_point_on_display_area']:
