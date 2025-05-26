@@ -6,7 +6,7 @@ import csv
 import time
 
 
-proband = 5
+proband = 9
 list = []
 folder_path = 'current_images/'
 max_time = 10 # Max Anzeigedauer in s
@@ -165,9 +165,11 @@ while run:
 
             if (event.key == pygame.K_RIGHT or event.key == pygame.K_SPACE) and skip:
                 next_image()
+                skip = False
 
         elif event.type == force_skip:
             next_image()
+            skip = False
 
         elif event.type == skippable:
             skip = True
