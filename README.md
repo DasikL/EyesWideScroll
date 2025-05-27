@@ -8,4 +8,4 @@ Die Daten werden als Proband ProbandUID .csv gespeichert.
 - Die fortlaufende ID der Probanden wird in ProbandUID.txt gespeichert, damit diese über Sessions hinweg bestehen bleibt. Das Repo sollte ordnungsgemäßt gepullt/gepusht werden, damit jede ProbandUID einzigartig bleibt.
 
 Der Ordner "new_images" enthält die Stimuli für das Pilottesting und darüber hinaus, der Ordner "current_images" die Stimuli, die im aktuellen Experiment verwendet werden. Alte Stimuli befinden sich im Ordner "old_images"
-Die neuen Stimuli sind jeweils mit einer ID und Tags versehen. Die Tags sind: text, imgtext, meme, politik, person, ort, ncc. Der Tag NCC zeigt an, das das Bild nicht unter Creative Commons Lizenz vorliegt
+Die neuen Stimuli sind jeweils mit einer ID und Tags versehen. Die Tags sind: text, imgtext, meme, politik, person, ort, ncc. Der Tag NCC zeigt an, dass das Bild nicht unter Creative Commons Lizenz vorliegt
