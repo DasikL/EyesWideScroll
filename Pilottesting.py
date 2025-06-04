@@ -9,7 +9,7 @@ import time
 proband = 9
 list = []
 folder_path = 'current_images/'
-max_time = 10 # Max Anzeigedauer in s
+max_time = 15 # Max Anzeigedauer in s
 min_time = 5 # Min Anzeigedauer in s
 
 
@@ -122,6 +122,34 @@ def next_image():
     skip = False
 
 
+def pause():
+    global image, paused, tracker
+
+    tracker.unsubscribe_from(tr.EYETRACKER_GAZE_DATA, gaze_data_callback)
+
+    pygame.time.set_timer(skippable, 0)
+    pygame.time.set_timer(force_skip, 0)
+
+    paused = True
+    image = pygame.font.Font(None, 74).render("Pausiert. Drücke 'R' zum fortfahren", True, (255, 255, 255))
+
+
+def resume():
+    global image, paused, list, folder_path, images, index, tracker
+
+    tracker.subscribe_to(tr.EYETRACKER_GAZE_DATA, gaze_data_callback,as_dictionary=True)
+
+    calibrate_tracker(tracker)
+    
+    image = pygame.image.load(r'' + folder_path + images[index])
+    image = scale_image(image)
+
+    pygame.time.set_timer(skippable, min_time * 1000)
+    pygame.time.set_timer(force_skip, max_time * 1000)
+    
+    list = []
+    paused = False
+
 
 
 images = [f for f in sorted(os.listdir(folder_path)) if f.lower().endswith('.png') or f.lower().endswith("jpeg") or f.lower().endswith("jpg")]
@@ -148,6 +176,7 @@ image = scale_image(image)
 
 tracker.subscribe_to(tr.EYETRACKER_GAZE_DATA, gaze_data_callback,as_dictionary=True)
 skip = False
+paused = False
 run = True
 pygame.time.set_timer(skippable, min_time * 1000)
 pygame.time.set_timer(force_skip, max_time * 1000)
@@ -163,8 +192,14 @@ while run:
             if event.key == pygame.K_ESCAPE:
                 run = False
 
-            if (event.key == pygame.K_RIGHT or event.key == pygame.K_SPACE) and skip:
+            if (event.key == pygame.K_RIGHT or event.key == pygame.K_SPACE) and skip and not paused:
                 next_image()
+
+            if event.key == pygame.K_p and not paused:
+                pause()
+            
+            if event.key == pygame.K_r and paused:
+                resume()
 
         elif event.type == force_skip:
             next_image()
