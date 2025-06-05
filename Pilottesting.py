@@ -9,6 +9,7 @@ import time
 proband = 9
 list = []
 folder_path = 'current_images/'
+control_path = 'control_images/'
 max_time = 15 # Max Anzeigedauer in s
 min_time = 5 # Min Anzeigedauer in s
 
@@ -78,25 +79,26 @@ def next_image():
     index += 1
 
     if index < len(images):
-        image = pygame.image.load(r'' + folder_path + images[index])
-        image = scale_image(image)
+        if index == round(len(images) / 2):
+            pause()
+        else:
+            image = pygame.image.load(r'' + folder_path + images[index])
+            image = scale_image(image)
 
-        with open('Proband' + str(proband) + '_' + images[index - 1].split(".")[0] + '.csv', 'w', newline='', encoding='utf-8') as csvfile:
-            # Bestimme die Feldnamen basierend auf den Keys des ersten Dictionaries
-            feldnamen = list[0].keys()
-            writer = csv.DictWriter(csvfile, fieldnames=feldnamen)
-            # Schreibe die Kopfzeile
-            writer.writeheader()
-            # Schreibe die Datenzeilen
-            writer.writerows(list)
+            with open('Proband' + str(proband) + '_' + images[index - 1].split(".")[0] + '.csv', 'w', newline='', encoding='utf-8') as csvfile:
+                # Bestimme die Feldnamen basierend auf den Keys des ersten Dictionaries
+                feldnamen = list[0].keys()
+                writer = csv.DictWriter(csvfile, fieldnames=feldnamen)
+                # Schreibe die Kopfzeile
+                writer.writeheader()
+                # Schreibe die Datenzeilen
+                writer.writerows(list)
 
-        list = []
-        pygame.time.set_timer(skippable, min_time * 1000)
-        pygame.time.set_timer(force_skip, max_time * 1000)
+            list = []
+            pygame.time.set_timer(skippable, min_time * 1000)
+            pygame.time.set_timer(force_skip, max_time * 1000)
 
     elif index == len(images):
-        image = pygame.font.Font(None, 74).render("Neuen Probanden kalibrieren? Dann jetzt '->' drücken", True, (255, 255, 255))
-        
         with open('Proband' + str(proband) + '_' + images[index - 1].split(".")[0] + '.csv', 'w', newline='', encoding='utf-8') as csvfile:
             # Bestimme die Feldnamen basierend auf den Keys des ersten Dictionaries
             feldnamen = list[0].keys()
@@ -105,7 +107,11 @@ def next_image():
             writer.writeheader()
             # Schreibe die Datenzeilen
             writer.writerows(list)
-            
+
+        control()
+
+        image = pygame.font.Font(None, 74).render("Neuen Probanden kalibrieren? Dann jetzt '->' drücken", True, (255, 255, 255))
+          
         pygame.time.set_timer(force_skip, 0)
 
     else:
@@ -151,10 +157,99 @@ def resume():
     paused = False
 
 
+def control():
+    global control_img, images, proband
+    
+    tracker.unsubscribe_from(tr.EYETRACKER_GAZE_DATA, gaze_data_callback)
+    
+    if (len(control_img) <= len(images)):
+        real = random.sample(range(len(images)), k=len(control_img))
+        test = control_img.copy()
+        for ind in real:
+            test.append(images[ind])
+        random.shuffle(test)
+
+        first = pygame.font.Font(None, 74).render("Wurden die nachfolgenden Bilder in der Studie bereits gezeigt?", True, (255, 255, 255))
+        second = pygame.font.Font(None, 74).render("'J' für Ja, 'N' für Nein, 'S' zum Starten", True, (255, 255, 255))
+
+        screen.fill((0, 0, 0))
+        screen.blit(first, (screen.get_width() / 2 - first.get_width() / 2, screen.get_height() / 2 - first.get_height() / 2 - 50))
+        screen.blit(second, (screen.get_width() / 2 - second.get_width() / 2, screen.get_height() / 2 - second.get_height() / 2 + 50))
+        pygame.display.flip()
+        
+        waiting = True
+        while waiting:
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_s:
+                        waiting = False
+
+            pygame.display.update()
+
+        correctness = []
+        tmp = 0
+        if test[tmp] in images:
+            img = pygame.image.load(r'' + folder_path + test[tmp])
+        else:
+            img = pygame.image.load(r'' + control_path + test[tmp])
+        img = scale_image(img)
+        while tmp < len(test):
+            screen.fill((0, 0, 0))
+            screen.blit(img, (screen.get_width() / 2 - img.get_width() / 2, screen.get_height() / 2 - img.get_height() / 2))
+
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_j:
+                        if test[tmp] in images:
+                            correctness.append({'Bild':test[tmp], 'Erwartet':True, 'Angegeben':True})
+                        else:
+                            correctness.append({'Bild':test[tmp], 'Erwartet':False, 'Angegeben':True})
+
+                        tmp = tmp + 1
+                        if tmp < len(test):
+                            if test[tmp] in images:
+                                img = pygame.image.load(r'' + folder_path + test[tmp])
+                            else:
+                                img = pygame.image.load(r'' + control_path + test[tmp])
+                            img = scale_image(img)
+
+                    if event.key == pygame.K_n:
+                        if test[tmp] in images:
+                            correctness.append({'Bild':test[tmp], 'Erwartet':True, 'Angegeben':False})
+                        else:
+                            correctness.append({'Bild':test[tmp], 'Erwartet':False, 'Angegeben':False})
+                        
+                        tmp = tmp + 1
+                        if tmp < len(test):
+                            if test[tmp] in images:
+                                img = pygame.image.load(r'' + folder_path + test[tmp])
+                            else:
+                                img = pygame.image.load(r'' + control_path + test[tmp])
+                            img = scale_image(img)
+
+            pygame.display.update()
+
+        with open('Proband' + str(proband) + '_Valididitätskontrolle.csv', 'w', newline='', encoding='utf-8') as csvfile:
+                # Bestimme die Feldnamen basierend auf den Keys des ersten Dictionaries
+                feldnamen = correctness[0].keys()
+                writer = csv.DictWriter(csvfile, fieldnames=feldnamen)
+
+                # Schreibe die Kopfzeile
+                writer.writeheader()
+
+                # Schreibe die Datenzeilen
+                writer.writerows(correctness)
+
+    tracker.subscribe_to(tr.EYETRACKER_GAZE_DATA, gaze_data_callback,as_dictionary=True)
+
 
 images = [f for f in sorted(os.listdir(folder_path)) if f.lower().endswith('.png') or f.lower().endswith("jpeg") or f.lower().endswith("jpg")]
 if not images:
     print("Keine Bilder im Ordner gefunden.")
+
+control_img = [f for f in sorted(os.listdir(control_path)) if f.lower().endswith('.png') or f.lower().endswith("jpeg") or f.lower().endswith("jpg")]
+if not control_img:
+    print("Keine Bilder im Krontrollordner")
 
 random.shuffle(images)
 index = 0
