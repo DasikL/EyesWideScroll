@@ -27,7 +27,7 @@ dfs = dict(tuple(data.groupby('Image')))
 print(dfs.keys())
 
 def filter_noise(
-    df: df,
+    df: pd.DataFrame,
     vel_thresh: float = 1,      # [px/ms], z.B. 0.5 px/ms ≙ 500 px/s
     amp_thresh: float = 25,     # [px]
     dur_thresh: float = 50      # [ms]
