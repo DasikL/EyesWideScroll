@@ -6,12 +6,15 @@ import csv
 import time
 
 
-proband = 9
+with open('ProbandID.txt', 'r', encoding='utf-8') as f:
+    proband = f.read().strip()
+    proband = int(proband)
+
 list = []
 folder_path = 'current_images/'
 control_path = 'control_images/'
 max_time = 15 # Max Anzeigedauer in s
-min_time = 5 # Min Anzeigedauer in s
+min_time = 5  # Min Anzeigedauer in s
 
 
 
@@ -308,3 +311,7 @@ while run:
 
 tracker.unsubscribe_from(tr.EYETRACKER_GAZE_DATA, gaze_data_callback)
 pygame.quit()
+
+
+with open ('ProbandID.txt', 'w', encoding='utf-8') as f:
+    f.write(str(proband + 1))
