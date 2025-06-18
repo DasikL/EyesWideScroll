@@ -83,12 +83,24 @@ def next_image():
 
     if index < len(images):
         if index == round(len(images) / 2):
+            curtime = time.asctime().split(' ')[3].split(':')[0] + '_' + time.asctime().split(' ')[3].split(':')[1] + '_' + time.asctime().split(' ')[3].split(':')[2]
+
+            with open('Proband' + str(proband) + '_' + curtime + '_' + images[index - 1].split(".")[0] + '.csv', 'w', newline='', encoding='utf-8') as csvfile:
+                # Bestimme die Feldnamen basierend auf den Keys des ersten Dictionaries
+                feldnamen = list[0].keys()
+                writer = csv.DictWriter(csvfile, fieldnames=feldnamen)
+                # Schreibe die Kopfzeile
+                writer.writeheader()
+                # Schreibe die Datenzeilen
+                writer.writerows(list)
             pause()
         else:
             image = pygame.image.load(r'' + folder_path + images[index])
             image = scale_image(image)
 
-            with open('Proband' + str(proband) + '_' + images[index - 1].split(".")[0] + '.csv', 'w', newline='', encoding='utf-8') as csvfile:
+            curtime = time.asctime().split(' ')[3].split(':')[0] + '_' + time.asctime().split(' ')[3].split(':')[1] + '_' + time.asctime().split(' ')[3].split(':')[2]
+
+            with open('Proband' + str(proband) + '_' + curtime + '_' + images[index - 1].split(".")[0] + '.csv', 'w', newline='', encoding='utf-8') as csvfile:
                 # Bestimme die Feldnamen basierend auf den Keys des ersten Dictionaries
                 feldnamen = list[0].keys()
                 writer = csv.DictWriter(csvfile, fieldnames=feldnamen)
@@ -102,7 +114,9 @@ def next_image():
             pygame.time.set_timer(force_skip, max_time * 1000)
 
     elif index == len(images):
-        with open('Proband' + str(proband) + '_' + images[index - 1].split(".")[0] + '.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        curtime = time.asctime().split(' ')[3].split(':')[0] + '_' + time.asctime().split(' ')[3].split(':')[1] + '_' + time.asctime().split(' ')[3].split(':')[2]
+
+        with open('Proband' + str(proband) + '_' + curtime + '_' + images[index - 1].split(".")[0] + '.csv', 'w', newline='', encoding='utf-8') as csvfile:
             # Bestimme die Feldnamen basierend auf den Keys des ersten Dictionaries
             feldnamen = list[0].keys()
             writer = csv.DictWriter(csvfile, fieldnames=feldnamen)
@@ -232,7 +246,9 @@ def control():
 
             pygame.display.update()
 
-        with open('Proband' + str(proband) + '_Valididitätskontrolle.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        curtime = time.asctime().split(' ')[3].split(':')[0] + '_' + time.asctime().split(' ')[3].split(':')[1] + '_' + time.asctime().split(' ')[3].split(':')[2]
+
+        with open('Proband' + str(proband) + '_' + curtime + '_Valididitätskontrolle.csv', 'w', newline='', encoding='utf-8') as csvfile:
                 # Bestimme die Feldnamen basierend auf den Keys des ersten Dictionaries
                 feldnamen = correctness[0].keys()
                 writer = csv.DictWriter(csvfile, fieldnames=feldnamen)
