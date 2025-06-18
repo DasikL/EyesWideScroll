@@ -126,7 +126,7 @@ def next_image():
             writer.writerows(list)
 
         control()
-
+        print("Skip: ",skip)
         image = pygame.font.Font(None, 74).render("Neuen Probanden kalibrieren? Dann jetzt '->' drücken", True, (255, 255, 255))
           
         pygame.time.set_timer(force_skip, 0)
