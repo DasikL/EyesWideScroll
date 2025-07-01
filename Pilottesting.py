@@ -4,7 +4,7 @@ import random
 import os
 import csv
 import time
-
+ 
 
 with open('ProbandID.txt', 'r', encoding='utf-8') as f:
     proband = f.read().strip()
