@@ -116,7 +116,7 @@ def next_image():
     elif index == len(images):
         curtime = time.asctime().split(' ')[3].split(':')[0] + '_' + time.asctime().split(' ')[3].split(':')[1] + '_' + time.asctime().split(' ')[3].split(':')[2]
 
-        with open('Proband' + str(proband) + '_' + curtime + '_' + images[index - 1].split(".")[0] + '.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        with open('./data/Proband' + str(proband) + '_' + curtime + '_' + images[index - 1].split(".")[0] + '.csv', 'w', newline='', encoding='utf-8') as csvfile:
             # Bestimme die Feldnamen basierend auf den Keys des ersten Dictionaries
             feldnamen = list[0].keys()
             writer = csv.DictWriter(csvfile, fieldnames=feldnamen)
@@ -249,7 +249,7 @@ def control():
 
         curtime = time.asctime().split(' ')[3].split(':')[0] + '_' + time.asctime().split(' ')[3].split(':')[1] + '_' + time.asctime().split(' ')[3].split(':')[2]
 
-        with open('Proband' + str(proband) + '_' + curtime + '_Valididitätskontrolle.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        with open('./data/Proband' + str(proband) + '_' + curtime + '_Valididitätskontrolle.csv', 'w', newline='', encoding='utf-8') as csvfile:
                 # Bestimme die Feldnamen basierend auf den Keys des ersten Dictionaries
                 feldnamen = correctness[0].keys()
                 writer = csv.DictWriter(csvfile, fieldnames=feldnamen)
