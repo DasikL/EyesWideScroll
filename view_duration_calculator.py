@@ -3,15 +3,7 @@ import os
 import csv
 import pandas as pd
 
-durations_df = pd.DataFrame(
-    columns=[
-        "participant_id",
-        "file_name",
-        "image_name",
-        "system_time_diff_seconds",
-        "device_time_diff_seconds",
-    ]
-)
+durations_df = pd.DataFrame(columns=['participant_id', 'file_name', 'image_name', 'system_time_diff_seconds', 'device_time_diff_seconds'])
 # current directory
 for file in os.listdir("./data"):
     if (
@@ -28,7 +20,8 @@ for file in os.listdir("./data"):
         system_start_time = current_frame["system_time_stamp"].iloc[0]
         system_end_time = current_frame["system_time_stamp"].iloc[-1]
         system_time_diff = system_end_time - system_start_time
-
+        image_name = [file[(file.index("id")):].strip('.csv')+".jpg"]
+        image_ids = [(int(img_name[2:5])) for img_name in image_name]
         current_times = {
             # participant_id is only the number of the participant
             "participant_id": [file.strip("Proband").split("_")[0]],
