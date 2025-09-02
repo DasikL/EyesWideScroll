@@ -5,44 +5,66 @@ import numpy as np
 from detectron2.config import get_cfg
 from detectron2.engine import DefaultPredictor
 from detectron2 import model_zoo
+from detectron2.data import MetadataCatalog
+
+import ast
+
+def preprocess_gaze_data(gaze_df):
+    def safe_parse(value):
+        if pd.isna(value):
+            return (np.nan, np.nan)
+        if isinstance(value, tuple) or isinstance(value, list):
+            return value
+        try:
+            return ast.literal_eval(str(value))
+        except Exception:
+            return (np.nan, np.nan)
+
+    # Parse into two numeric columns
+    gaze_df[['x_norm', 'y_norm']] = gaze_df['left_gaze_point_on_display_area'] \
+        .apply(safe_parse).apply(pd.Series)
+
+    # Screen dimensions (16:9)
+    screen_w, screen_h = 1920, 1080
+    gaze_df['x_screen'] = gaze_df['x_norm'] * screen_w
+    gaze_df['y_screen'] = gaze_df['y_norm'] * screen_h
+
+    # Image mapping (800x800 centered)
+    offset_x = (screen_w - screen_h) // 2   # 420 px black bars
+    offset_y = 0
+    scale = screen_h / 800                  # 1080 / 800 = 1.35
+
+    gaze_df['x_gaze'] = (gaze_df['x_screen'] - offset_x) / scale
+    gaze_df['y_gaze'] = (gaze_df['y_screen'] - offset_y) / scale
+
+    return gaze_df
 
 # --- 1. CONFIGURATION ---
-# Define your file paths and parameters here.
-# IMPORTANT: Adjust these paths to match your local directory structure.
-IMAGE_DIR = 'path/to/your/images'
-GAZE_DATA_DIR = 'path/to/your/gaze_data'
+IMAGE_DIR = './current_images'
+GAZE_DATA_DIR = './data'
 OUTPUT_RESULTS_PATH = 'analysis_results.csv'
 
-# Select a pre-trained Detectron2 model for instance segmentation.
-# For high accuracy, Mask R-CNN is a solid choice.
-# You can find more models in the Detectron2 Model Zoo: https://github.com/facebookresearch/detectron2/blob/main/MODEL_ZOO.md
 CONFIG_FILE = "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"
 
 # --- 2. SET UP DETECTRON2 PREDICTOR ---
 print("Initializing Detectron2 model...")
 
-# Get a default configuration and merge it with a pre-trained model's configuration.
 cfg = get_cfg()
 cfg.merge_from_file(model_zoo.get_config_file(CONFIG_FILE))
-
-# Set the model's weights from the Model Zoo.
 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(CONFIG_FILE)
-
-# Set a threshold for detection confidence. Objects with a score below this will be ignored.
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
 
-# Build the predictor.
 predictor = DefaultPredictor(cfg)
+metadata = MetadataCatalog.get(cfg.DATASETS.TRAIN[0])
 
 print("Model loaded successfully.")
 
 # --- 3. DATA PROCESSING PIPELINE ---
-# Create an empty list to store the results of the analysis.
-all_results =
+all_results = []
 
-# Get the list of all image and gaze data files.
-image_files = sorted()
-gaze_data_files = sorted()
+# Get lists of image and gaze files
+image_files = sorted([f for f in os.listdir(IMAGE_DIR) if f.lower().endswith(('.jpg', '.jpeg', '.png'))])
+gaze_data_files = sorted([f for f in os.listdir(GAZE_DATA_DIR) if f.lower().endswith('.csv')])
 
 if not image_files:
     print(f"No image files found in '{IMAGE_DIR}'. Please check your path.")
@@ -52,95 +74,83 @@ if not gaze_data_files:
     print(f"No gaze data files found in '{GAZE_DATA_DIR}'. Please check your path.")
     exit()
 
-# Loop through each image file to run the segmentation and analysis.
+# Loop over images
 for image_filename in image_files:
     print(f"\nProcessing image: {image_filename}")
     image_path = os.path.join(IMAGE_DIR, image_filename)
-    
-    # Read the image using OpenCV.
+
     img = cv2.imread(image_path)
     if img is None:
         print(f"Warning: Could not read image at {image_path}. Skipping.")
         continue
 
-    # Run the image through the Detectron2 model to get predictions.
     outputs = predictor(img)
-    
-    # Extract the detected instances from the output.
     instances = outputs["instances"]
-    
-    # Check if any objects were detected.
-    if len(instances) == 0:
+
+    if len(instances.pred_classes) == 0:
         print("No objects detected in this image. Skipping gaze analysis.")
         continue
 
-    # Get the segmentation masks and class labels for each detected object.
-    # The masks are returned as a binary array.[2, 3]
     pred_masks = instances.pred_masks.to('cpu').numpy()
     pred_classes = instances.pred_classes.to('cpu').numpy()
 
-    # Loop through each participant's gaze data for the current image.
+    image_stem = os.path.splitext(image_filename)[0]
+
+    # Match gaze data files by name
     for gaze_data_filename in gaze_data_files:
-        # A simple check to match image and gaze data files.
-        # This assumes a file naming convention like 'participant_1_image_name.csv'.
-        if image_filename.split('.') in gaze_data_filename:
+        if image_stem in gaze_data_filename:
             print(f"  Analyzing gaze data from: {gaze_data_filename}")
             gaze_data_path = os.path.join(GAZE_DATA_DIR, gaze_data_filename)
             gaze_df = pd.read_csv(gaze_data_path)
 
-            # Check if gaze data is available.
             if gaze_df.empty:
                 print(f"    Warning: Gaze data file is empty. Skipping.")
                 continue
 
-            # Initialize a counter for each detected object instance.
-            fixation_count_per_object = {}
-            
-            # --- 4. FUSING DATA: THE POINT-IN-MASK ALGORITHM ---
-            # Loop through each gaze point in the participant's data.
-            # Assuming the CSV has columns 'x_gaze' and 'y_gaze'.
-            for index, row in gaze_df.iterrows():
-                gaze_x = int(row['x_gaze'])
-                gaze_y = int(row['y_gaze'])
+            gaze_df = preprocess_gaze_data(gaze_df)
 
-                # Check for each detected object if the gaze point falls inside its mask.
-                # This is a simple and efficient pixel-value lookup on the binary mask array.
+            fixation_count_per_object = {}
+
+            # --- 4. POINT-IN-MASK CHECK ---
+            for _, row in gaze_df.iterrows():
+                if pd.isna(row['x_gaze']) or pd.isna(row['y_gaze']):
+                    continue
+
+                gaze_x = int(round(row['x_gaze']))
+                gaze_y = int(round(row['y_gaze']))
+
                 for mask_idx, mask in enumerate(pred_masks):
-                    # Ensure coordinates are within image bounds before lookup.
-                    if 0 <= gaze_y < mask.shape and 0 <= gaze_x < mask.shape[1]:
+                    if 0 <= gaze_y < mask.shape[0] and 0 <= gaze_x < mask.shape[1]:
                         if mask[gaze_y, gaze_x]:
-                            # If the gaze point is inside the mask, record the hit.
                             object_class_id = pred_classes[mask_idx]
-                            object_instance_id = mask_idx # A unique ID for this specific object instance.
-                            
+                            object_instance_id = mask_idx
+
                             key = f"{object_class_id}_{object_instance_id}"
                             fixation_count_per_object[key] = fixation_count_per_object.get(key, 0) + 1
-                            
-                            # Break the inner loop once a point is assigned to an object.
                             break
 
             # --- 5. AGGREGATE RESULTS ---
-            # Store the final count for each object.
             for key, count in fixation_count_per_object.items():
                 object_class_id, object_instance_id = key.split('_')
-                
-                # Get the class name from Detectron2's metadata.
-                class_name = cfg.DATASETS.TRAIN.get('thing_classes', ['Unknown'])[int(object_class_id)]
-                
+                object_class_id = int(object_class_id)
+
+                class_name = metadata.thing_classes[object_class_id]
+
                 results = {
                     'image_filename': image_filename,
-                    'participant_id': gaze_data_filename.split('_'),
+                    'participant_id': gaze_data_filename.split('_')[0],
                     'object_class_id': object_class_id,
                     'object_class_name': class_name,
-                    'object_instance_id': object_instance_id,
+                    'object_instance_id': int(object_instance_id),
                     'fixation_count': count
                 }
                 all_results.append(results)
 
-# --- 6. SAVE RESULTS TO CSV ---
+# --- 6. SAVE RESULTS ---
 if all_results:
     results_df = pd.DataFrame(all_results)
     results_df.to_csv(OUTPUT_RESULTS_PATH, index=False)
     print(f"\nAnalysis complete. Results saved to '{OUTPUT_RESULTS_PATH}'.")
 else:
     print("\nNo analysis results to save. Please check your data and paths.")
+
